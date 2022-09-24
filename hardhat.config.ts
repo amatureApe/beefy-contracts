@@ -5,11 +5,15 @@ import "@nomiclabs/hardhat-etherscan";
 import "@openzeppelin/hardhat-upgrades";
 // import "@typechain/hardhat";
 import "./tasks";
+// import "./tasks/flat.js"
+
 
 import { HardhatUserConfig } from "hardhat/src/types/config";
 import { HardhatUserConfig as WithEtherscanConfig } from "hardhat/config";
 import { buildHardhatNetworkAccounts, getPKs } from "./utils/configInit";
 import { ethers } from "ethers";
+
+// task("balance", "Prints an account's balance").setAction(async () => { });
 
 type DeploymentConfig = HardhatUserConfig & WithEtherscanConfig;
 
@@ -120,8 +124,8 @@ const config: DeploymentConfig = {
       accounts,
     },
     optimism: {
-      url:  process.env.OPTIMISM_RPC || "https://rpc.ankr.com/optimism",
-      chainId: 10, 
+      url: process.env.OPTIMISM_RPC || "https://rpc.ankr.com/optimism",
+      chainId: 10,
       accounts,
     }
   },
