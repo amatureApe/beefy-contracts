@@ -7,47 +7,48 @@ import { verifyContract } from "../../utils/verifyContract";
 const registerSubsidy = require("../../utils/registerSubsidy");
 
 const {
-  platforms: { pancake, beefyfinance },
+  platforms: { spookyswap, beefyfinance },
   tokens: {
-    CAKE: { address: CAKE },
-    WBNB: { address: WBNB },
-    WOM: { address: WOM },
-    SD: { address: SD },
-    BUSD: { address: BUSD }
+    DEUS: { address: DEUS },
+    WFTM: { address: WFTM },
+    DEI: { address: DEI },
+    USDC: { address: USDC },
+    BOO: { address: BOO}
   },
-} = addressBook.bsc;
+} = addressBook.fantom;
 
-const shouldVerifyOnEtherscan = false;
+const shouldVerifyOnEtherscan = true;
 
-const want = web3.utils.toChecksumAddress("0xe68D05418A8d7969D9CA6761ad46F449629d928c");
-const ensId = ethers.utils.formatBytes32String("cake.eth");
+const want = web3.utils.toChecksumAddress("0x91f7120898b4be26cC1e84F421e76725c07d1361");
+const ensId = ethers.utils.formatBytes32String("boo.eth");
 
 const vaultParams = {
-  mooName: "Moo CakeV2 WOM-BUSD",
-  mooSymbol: "mooCakeV2WOM-BUSD",
+  mooName: "Moo Boo USDC-DEI",
+  mooSymbol: "mooBooUSDC-DEI",
   delay: 21600,
 };
 
 const strategyParams = {
   want: want,
-  poolId: 116,
-  chef: pancake.masterchefV2,
-  unirouter: pancake.router,
+  poolId: 2,
+  chef: "0x9C9C920E51778c4ABF727b8Bb223e78132F00aA4",
+  unirouter: "0x31F63A33141fFee63D4B26755430a390ACdD8a4d",
   strategist: process.env.STRATEGIST_ADDRESS,
   keeper: beefyfinance.keeper,
   beefyFeeRecipient: beefyfinance.beefyFeeRecipient,
   beefyFeeConfig: beefyfinance.beefyFeeConfig,
-  outputToNativeRoute: [CAKE, WBNB],
-  outputToLp0Route: [CAKE, BUSD, WOM],
-  outputToLp1Route: [CAKE, BUSD],
+  outputToNativeRoute: [DEUS, WFTM],
+  secondOutputToNativeRoute: [BOO, WFTM],
+  outputToLp0Route: [WFTM, USDC],
+  outputToLp1Route: [WFTM, USDC, "0xDE1E704dae0B4051e80DAbB26ab6ad6c12262DA0"],
   ensId,
-  shouldSetPendingRewardsFunctionName: true,
-  pendingRewardsFunctionName: "pendingCake", // used for rewardsAvailable(), use correct function name from masterchef
+  shouldSetPendingRewardsFunctionName: false,
+  pendingRewardsFunctionName: "pendingToken", // used for rewardsAvailable(), use correct function name from masterchef
 };
 
 const contractNames = {
   vault: "BeefyVaultV6",
-  strategy: "StrategyCommonChefLP",
+  strategy: "StrategySpookyV2LP",
 };
 
 async function main() {
@@ -70,6 +71,7 @@ async function main() {
   console.log("Deploying:", vaultParams.mooName);
 
   const predictedAddresses = await predictAddresses({ creator: deployer.address });
+  console.log("Predicted Addresses: ", predictedAddresses)
 
   const vaultConstructorArguments = [
     predictedAddresses.strategy,
@@ -77,8 +79,14 @@ async function main() {
     vaultParams.mooSymbol,
     vaultParams.delay,
   ];
+
+  console.log("PING1")
+
   const vault = await Vault.deploy(...vaultConstructorArguments);
+  console.log("PING2")
+
   await vault.deployed();
+  console.log("PING3", vault.address)
 
   const strategyConstructorArguments = [
     strategyParams.want,
@@ -91,11 +99,18 @@ async function main() {
     strategyParams.beefyFeeRecipient,
     strategyParams.beefyFeeConfig],
     strategyParams.outputToNativeRoute,
+    strategyParams.secondOutputToNativeRoute,
     strategyParams.outputToLp0Route,
     strategyParams.outputToLp1Route
   ];
   const strategy = await Strategy.deploy(...strategyConstructorArguments);
+  // console.log("PING4", strategy)
+  console.log("PING4")
+
   await strategy.deployed();
+
+  console.log("PING5")
+
 
   // add this info to PR
   console.log();
@@ -117,16 +132,16 @@ async function main() {
   }
 
   if (strategyParams.shouldSetPendingRewardsFunctionName) {
-      await setPendingRewardsFunctionName(strategy, strategyParams.pendingRewardsFunctionName);
+    await setPendingRewardsFunctionName(strategy, strategyParams.pendingRewardsFunctionName);
   }
-  
+
   console.log(`Transfering Vault Owner to ${beefyfinance.vaultOwner}`)
   await vault.transferOwnership(beefyfinance.vaultOwner);
   console.log();
 
   await Promise.all(verifyContractsPromises);
 
-  if (hardhat.network.name === "bsc") {
+  if (hardhat.network.name === "fantom") {
     await registerSubsidy(vault.address, deployer);
     await registerSubsidy(strategy.address, deployer);
   }

@@ -64,6 +64,7 @@ async function main() {
   console.log("Deploying:", vaultParams.mooName);
 
   const predictedAddresses = await predictAddresses({ creator: deployer.address });
+  console.log("PING", predictedAddresses)
 
   const vaultConstructorArguments = [
     predictedAddresses.strategy,

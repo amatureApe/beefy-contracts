@@ -17,6 +17,19 @@ const config = {
   strat: "0xc8DfDD41B706A6897Ff17BF99e2e94Bb661da92c",
 };
 
+const verify = async (strategy) => {
+  try {
+    await hre.run("verify:verify", {
+      address: strategy.address,
+      constructorArguments: [
+        ...strategyConstructorArguments
+      ]
+    });
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 async function main() {
   if (Object.values(config).some((v) => v === undefined)) {
     console.error("one of config values undefined");
@@ -35,7 +48,7 @@ async function main() {
       config.delay,
     ],
   })
- 
+
 //  await hardhat.run("verify:verify", {
 //    address: strategy.address,
 //    constructorArguments: [
