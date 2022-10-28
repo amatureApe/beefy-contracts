@@ -150,7 +150,7 @@ contract StrategySpookyV2LP is StratFeeManager, GasFeeThrottler {
     // performance fees
     function chargeFees(address callFeeRecipient) internal {
         IFeeConfig.FeeCategory memory fees = getFees();
-        uint256 toNative = IERC20(output).balanceOf(address(this)) * fees.total / DIVISOR;
+        uint256 toNative = IERC20(output).balanceOf(address(this));
         if (toNative > 0) {
             IUniswapRouter(unirouter).swapExactTokensForTokens(toNative, 0, outputToNativeRoute, address(this), block.timestamp);
         }
