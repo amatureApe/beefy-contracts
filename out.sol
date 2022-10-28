@@ -937,7 +937,7 @@ library SafeERC20 {
 }
 
 
-// File contracts/BIFI/interfaces/common/IUniswapRouter.sol
+// File contracts/BIFI/interfaces/common/v0.8/IUniswapRouter.sol
 
 // SPDX-License-Identifier: MIT
 
@@ -1092,7 +1092,7 @@ interface IUniswapV2Pair {
 }
 
 
-// File contracts/BIFI/interfaces/spooky/ISpookyChefV2.sol
+// File contracts/BIFI/interfaces/spooky/v0.8/ISpookyChefV2.sol
 
 // SPDX-License-Identifier: MIT
 
@@ -1108,7 +1108,7 @@ interface ISpookyChefV2 {
 }
 
 
-// File contracts/BIFI/interfaces/spooky/ISpookyRewarder.sol
+// File contracts/BIFI/interfaces/spooky/v0.8/ISpookyRewarder.sol
 
 // SPDX-License-Identifier: MIT
 
@@ -1532,6 +1532,7 @@ contract StrategySpookyV2LP is StratFeeManager, GasFeeThrottler {
         address _chef,
         CommonAddresses memory _commonAddresses,
         address[] memory _outputToNativeRoute,
+        address[] memory _secondOutputToNativeRoute,
         address[] memory _nativeToLp0Route,
         address[] memory _nativeToLp1Route
     ) StratFeeManager(_commonAddresses) {
@@ -1540,8 +1541,10 @@ contract StrategySpookyV2LP is StratFeeManager, GasFeeThrottler {
         chef = _chef;
 
         output = _outputToNativeRoute[0];
+        secondOutput = _secondOutputToNativeRoute[0];
         native = _outputToNativeRoute[_outputToNativeRoute.length - 1];
         outputToNativeRoute = _outputToNativeRoute;
+        secondOutputToNativeRoute = _secondOutputToNativeRoute;
 
         // setup lp routing
         lpToken0 = IUniswapV2Pair(want).token0();
@@ -1644,7 +1647,7 @@ contract StrategySpookyV2LP is StratFeeManager, GasFeeThrottler {
             }
         }
 
-        uint256 nativeBal = IERC20(native).balanceOf(address(this)) * 45 / 1000;
+        uint256 nativeBal = IERC20(native).balanceOf(address(this)) * fees.total / DIVISOR;
 
         uint256 callFeeAmount = nativeBal * fees.call / DIVISOR;
         IERC20(native).safeTransfer(callFeeRecipient, callFeeAmount);
@@ -1692,11 +1695,11 @@ contract StrategySpookyV2LP is StratFeeManager, GasFeeThrottler {
     }
 
     function rewardsAvailable() public view returns (uint256, uint256) {
-        uint256 outputBal = ISpookyChefV2(chef).pendingBOO(poolId, address(this));
+        address rewarder = ISpookyChefV2(chef).rewarder(poolId);
+        uint256 outputBal = ISpookyRewarder(rewarder).pendingToken(poolId, address(this));
         uint256 secondBal;
         if (secondOutput != address(0)) {
-            address rewarder = ISpookyChefV2(chef).rewarder(poolId);
-            secondBal = ISpookyRewarder(rewarder).pendingToken(poolId, address(this));
+            secondBal = ISpookyChefV2(chef).pendingBOO(poolId, address(this));
         }
 
         return (outputBal, secondBal);

@@ -2,6 +2,7 @@ import hardhat, { ethers, web3 } from "hardhat";
 import { addressBook } from "blockchain-addressbook";
 import { predictAddresses } from "../utils/predictAddresses";
 import { setPendingRewardsFunctionName } from "../utils/setPendingRewardsFunctionName";
+import { verifyContract } from "../utils/verifyContract";
 
 const registerSubsidy = require("../utils/registerSubsidy");
 

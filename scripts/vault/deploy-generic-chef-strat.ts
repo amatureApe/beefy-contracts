@@ -13,7 +13,7 @@ const {
     WFTM: { address: WFTM },
     DEI: { address: DEI },
     USDC: { address: USDC },
-    BOO: { address: BOO}
+    BOO: { address: BOO }
   },
 } = addressBook.fantom;
 
@@ -32,7 +32,7 @@ const strategyParams = {
   want: want,
   poolId: 2,
   chef: "0x9C9C920E51778c4ABF727b8Bb223e78132F00aA4",
-  unirouter: "0x31F63A33141fFee63D4B26755430a390ACdD8a4d",
+  unirouter: "0xF491e7B69E4244ad4002BC14e878a34207E38c29",
   strategist: process.env.STRATEGIST_ADDRESS,
   keeper: beefyfinance.keeper,
   beefyFeeRecipient: beefyfinance.beefyFeeRecipient,
@@ -80,13 +80,9 @@ async function main() {
     vaultParams.delay,
   ];
 
-  console.log("PING1")
-
   const vault = await Vault.deploy(...vaultConstructorArguments);
-  console.log("PING2")
 
   await vault.deployed();
-  console.log("PING3", vault.address)
 
   const strategyConstructorArguments = [
     strategyParams.want,
@@ -103,9 +99,10 @@ async function main() {
     strategyParams.outputToLp0Route,
     strategyParams.outputToLp1Route
   ];
+  console.log("PING", strategyConstructorArguments)
   const strategy = await Strategy.deploy(...strategyConstructorArguments);
   // console.log("PING4", strategy)
-  console.log("PING4")
+  console.log("PING4", process.env.API_KEY)
 
   await strategy.deployed();
 
@@ -123,6 +120,7 @@ async function main() {
   console.log("Running post deployment");
 
   const verifyContractsPromises: Promise<any>[] = [];
+  console.log(process.env.API_KEY)
   if (shouldVerifyOnEtherscan) {
     // skip await as this is a long running operation, and you can do other stuff to prepare vault while this finishes
     verifyContractsPromises.push(

@@ -5,4 +5,5 @@ export const verifyContract = async (address: string, constructorArguments: any[
     address,
     constructorArguments,
   });
+  console.log(process.env.API_KEY)
 };

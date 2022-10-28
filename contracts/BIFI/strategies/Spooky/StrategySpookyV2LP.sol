@@ -210,11 +210,11 @@ contract StrategySpookyV2LP is StratFeeManager, GasFeeThrottler {
     }
 
     function rewardsAvailable() public view returns (uint256, uint256) {
-        uint256 outputBal = ISpookyChefV2(chef).pendingBOO(poolId, address(this));
+        address rewarder = ISpookyChefV2(chef).rewarder(poolId);
+        uint256 outputBal = ISpookyRewarder(rewarder).pendingToken(poolId, address(this));
         uint256 secondBal;
         if (secondOutput != address(0)) {
-            address rewarder = ISpookyChefV2(chef).rewarder(poolId);
-            secondBal = ISpookyRewarder(rewarder).pendingToken(poolId, address(this));
+            secondBal = ISpookyChefV2(chef).pendingBOO(poolId, address(this));
         }
 
         return (outputBal, secondBal);
